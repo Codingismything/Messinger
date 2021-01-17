@@ -8,6 +8,7 @@
 import UIKit
 import FirebaseAuth
 import FBSDKLoginKit
+import GoogleSignIn
 
 class LoginViewController: UIViewController {
     
@@ -79,10 +80,31 @@ class LoginViewController: UIViewController {
         return loginButton
     }()
     
+    private let googleSignInButton = GIDSignInButton()
+    
+    private var loginObserver: NSObjectProtocol?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        loginObserver = NotificationCenter.default.addObserver(forName: .didLogInNotification,
+                                               object: nil,
+                                               queue: .main,
+                                               using: {[weak self]  _ in
+                                                
+                                                guard let strongSelf = self else {
+                                                    
+                                                    return
+                                                }
+                                                
+                                                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                                                
+                                               })
+        
         title = "Login"
         view.backgroundColor = .white
+        
+        GIDSignIn.sharedInstance()?.presentingViewController = self
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .done, target: self, action: #selector(didTappRegister))
         
@@ -100,7 +122,15 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(passwordField)
         scrollView.addSubview(LoginButton)
         scrollView.addSubview(facebookLoginButton)
+        scrollView.addSubview(googleSignInButton)
         
+    }
+    
+    
+    deinit {
+        if let observer = loginObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -119,6 +149,8 @@ class LoginViewController: UIViewController {
         LoginButton.frame = CGRect(x: 30, y: passwordField.bottom + 10, width: scrollView.width - 60, height: 52)
         
         facebookLoginButton.frame = CGRect(x: 30, y: LoginButton.bottom + 10, width: scrollView.width - 60, height: 52)
+        
+        googleSignInButton.frame = CGRect(x: 30, y: facebookLoginButton.bottom + 10, width: scrollView.width - 60, height: 52)
         
         
     }
@@ -256,9 +288,9 @@ extension LoginViewController: LoginButtonDelegate {
                 strongSelf.dismiss(animated: true, completion: nil)
                 
             })
-        
+            
         })
-     
+        
     }
     
     func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
