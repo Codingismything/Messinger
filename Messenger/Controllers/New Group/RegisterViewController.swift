@@ -189,21 +189,44 @@ class RegisterViewController: UIViewController, UINavigationControllerDelegate {
             return
         }
         
-        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
+        
+        DataBaseManager.shared.userExists(with: email, completion: { [weak self] exist in
             
-            guard authResult != nil, error == nil else {
-                print("error while authenticating")
+            guard let strongSelf = self else {
                 return
-                
+            }
+            guard !exist else {
+                strongSelf.alertLoginError(message: "Looks like user's account for this email address already exists")
+                return
             }
             
-            print("authentication successfull")
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
+                
+                
+                
+                guard authResult != nil, error == nil else {
+                    print("error while authenticating")
+                    return
+                    
+                }
+                
+                
+                DataBaseManager.shared.insertUser(with: ChatAppUser(
+                                                    firstName: firstName,
+                                                    lastName: lastName,
+                                                    emailaddress: password))
+                
+                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+            })
+            
         })
+        
+       
     }
     
-    private func alertLoginError() {
+    private func alertLoginError(message: String = "You need to enter all info to create new account") {
         
-        let alert = UIAlertController(title: "Whoops", message: "You need to enter all info to create new account", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Whoops", message: message , preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         

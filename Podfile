@@ -5,10 +5,20 @@ target 'Messenger' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
+# Firebase pods
+
   pod 'Firebase/Analytics'
   pod 'Firebase/Core'
   pod 'Firebase/Auth'
   pod 'Firebase/Database'
+
+#facebook pods
+
+  pod 'FBSDKLoginKit'
+
+# Google Pods
+
+  pod 'GoogleSignIn'
 
   # Pods for Messenger
 
